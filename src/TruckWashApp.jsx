@@ -13,19 +13,30 @@ export default function TruckWashApp() {
   const [logSubmitted, setLogSubmitted] = useState(false);
 
   const handleLogin = async () => {
-    // Simulate login validation
-    const res = await fetch(WEB_APP_URL, {
-      method: "POST",
-      body: JSON.stringify({ action: "login", username: user, password })
-    });
-    const data = await res.json();
-    if (data.success) {
-      setRole(data.role);
-      setCanViewPricing(data.canViewPricing === "Yes");
-      setTypeCEnabled(data.typeCEnabled === "Yes");
-      setLoggedIn(true);
-    } else {
-      alert("Invalid login");
+    try {
+      const res = await fetch(WEB_APP_URL, {
+        method: "POST",
+        body: JSON.stringify({
+          action: "login",
+          username: user,
+          password: password
+        }),
+        headers: {
+          "Content-Type": "application/json"
+        }
+      });
+      const data = await res.json();
+      if (data.success) {
+        setRole(data.role);
+        setCanViewPricing(data.canViewPricing === "Yes");
+        setTypeCEnabled(data.typeCEnabled === "Yes");
+        setLoggedIn(true);
+      } else {
+        alert("Invalid login");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Login failed");
     }
   };
 
@@ -33,6 +44,7 @@ export default function TruckWashApp() {
     const now = new Date();
     const date = now.toLocaleDateString("en-US");
     const time = now.toLocaleTimeString("en-US", { hour: "numeric", minute: "numeric", hour12: true });
+    const total = truckCounts.typeA * 25 + truckCounts.typeB * 50 + truckCounts.typeC * 0;
 
     const payload = {
       action: "log",
@@ -41,12 +53,16 @@ export default function TruckWashApp() {
       typeA: truckCounts.typeA,
       typeB: truckCounts.typeB,
       typeC: truckCounts.typeC,
+      total,
       user
     };
 
     await fetch(WEB_APP_URL, {
       method: "POST",
-      body: JSON.stringify(payload)
+      body: JSON.stringify(payload),
+      headers: {
+        "Content-Type": "application/json"
+      }
     });
 
     setLogSubmitted(true);
@@ -104,34 +120,24 @@ export default function TruckWashApp() {
       </div>
 
       <div className="space-y-2">
-        <div className="flex justify-between items-center">
-          <span>Type A</span>
-          <div className="flex items-center gap-2">
-            <button onClick={() => setTruckCounts({ ...truckCounts, typeA: Math.max(0, truckCounts.typeA - 1) })}>−</button>
-            <span>{truckCounts.typeA}</span>
-            <button onClick={() => setTruckCounts({ ...truckCounts, typeA: truckCounts.typeA + 1 })}>+</button>
-          </div>
-        </div>
-
-        <div className="flex justify-between items-center">
-          <span>Type B</span>
-          <div className="flex items-center gap-2">
-            <button onClick={() => setTruckCounts({ ...truckCounts, typeB: Math.max(0, truckCounts.typeB - 1) })}>−</button>
-            <span>{truckCounts.typeB}</span>
-            <button onClick={() => setTruckCounts({ ...truckCounts, typeB: truckCounts.typeB + 1 })}>+</button>
-          </div>
-        </div>
-
-        {typeCEnabled && (
-          <div className="flex justify-between items-center">
-            <span>Type C</span>
-            <div className="flex items-center gap-2">
-              <button onClick={() => setTruckCounts({ ...truckCounts, typeC: Math.max(0, truckCounts.typeC - 1) })}>−</button>
-              <span>{truckCounts.typeC}</span>
-              <button onClick={() => setTruckCounts({ ...truckCounts, typeC: truckCounts.typeC + 1 })}>+</button>
+        {["A", "B", "C"].map(type => {
+          if (type === "C" && !typeCEnabled) return null;
+          const label = `Type ${type}`;
+          return (
+            <div className="flex justify-between items-center" key={type}>
+              <span>{label}</span>
+              <div className="flex items-center gap-2">
+                <button onClick={() =>
+                  setTruckCounts({ ...truckCounts, [`type${type}`]: Math.max(0, truckCounts[`type${type}`] - 1) })
+                }>−</button>
+                <span>{truckCounts[`type${type}`]}</span>
+                <button onClick={() =>
+                  setTruckCounts({ ...truckCounts, [`type${type}`]: truckCounts[`type${type}`] + 1 })
+                }>+</button>
+              </div>
             </div>
-          </div>
-        )}
+          );
+        })}
       </div>
 
       <button
