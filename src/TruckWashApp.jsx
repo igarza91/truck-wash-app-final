@@ -14,17 +14,16 @@ export default function TruckWashApp() {
 
   const handleLogin = async () => {
     try {
+      const form = new FormData();
+      form.append("action", "login");
+      form.append("username", user);
+      form.append("password", password);
+
       const res = await fetch(WEB_APP_URL, {
         method: "POST",
-        body: JSON.stringify({
-          action: "login",
-          username: user,
-          password: password
-        }),
-        headers: {
-          "Content-Type": "application/json"
-        }
+        body: form
       });
+
       const data = await res.json();
       if (data.success) {
         setRole(data.role);
@@ -46,23 +45,19 @@ export default function TruckWashApp() {
     const time = now.toLocaleTimeString("en-US", { hour: "numeric", minute: "numeric", hour12: true });
     const total = truckCounts.typeA * 25 + truckCounts.typeB * 50 + truckCounts.typeC * 0;
 
-    const payload = {
-      action: "log",
-      date,
-      time,
-      typeA: truckCounts.typeA,
-      typeB: truckCounts.typeB,
-      typeC: truckCounts.typeC,
-      total,
-      user
-    };
+    const form = new FormData();
+    form.append("action", "log");
+    form.append("date", date);
+    form.append("time", time);
+    form.append("typeA", truckCounts.typeA);
+    form.append("typeB", truckCounts.typeB);
+    form.append("typeC", truckCounts.typeC);
+    form.append("total", total);
+    form.append("user", user);
 
     await fetch(WEB_APP_URL, {
       method: "POST",
-      body: JSON.stringify(payload),
-      headers: {
-        "Content-Type": "application/json"
-      }
+      body: form
     });
 
     setLogSubmitted(true);
