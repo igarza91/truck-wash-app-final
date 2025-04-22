@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzUbngknTlb9II9lHzuooKBNtV5nvqKw69cCbsUxt8v1f-qLzxKtFis7760JFy5eGQlXw/exec";
+const WEB_APP_URL = "/api/google-proxy";
 
 export default function TruckWashApp() {
   const [user, setUser] = useState("");
